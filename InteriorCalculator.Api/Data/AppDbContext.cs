@@ -1,3 +1,4 @@
+using InteriorCalculator.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace InteriorCalculator.Api.Data;
@@ -8,4 +9,6 @@ public class AppDbContext : DbContext
         : base(options)
     {
     }
+
+    public DbSet<Admin> Admins { get; set; }
 }

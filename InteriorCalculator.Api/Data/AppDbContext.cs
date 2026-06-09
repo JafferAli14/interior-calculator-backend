@@ -11,4 +11,6 @@ public class AppDbContext : DbContext
     }
 
     public DbSet<Admin> Admins { get; set; }
+
+    public DbSet<Project> Projects { get; set; }
 }

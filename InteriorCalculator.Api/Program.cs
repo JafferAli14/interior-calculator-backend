@@ -76,8 +76,15 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<ProjectService>();
+builder.Services.AddScoped<PriceItemService>();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await PriceItemSeeder.SeedAsync(context);
+}
 
 if (app.Environment.IsDevelopment())
 {

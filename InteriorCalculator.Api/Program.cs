@@ -77,6 +77,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<ProjectService>();
 builder.Services.AddScoped<PriceItemService>();
+builder.Services.AddScoped<BedroomPricingService>();
 
 var app = builder.Build();
 

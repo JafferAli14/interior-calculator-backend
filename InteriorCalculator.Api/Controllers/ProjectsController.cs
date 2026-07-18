@@ -11,10 +11,28 @@ namespace InteriorCalculator.Api.Controllers;
 public class ProjectsController : ControllerBase
 {
     private readonly ProjectService _projectService;
+    private readonly BedroomPricingService _bedroomPricingService;
 
-    public ProjectsController(ProjectService projectService)
+    public ProjectsController(
+        ProjectService projectService,
+        BedroomPricingService bedroomPricingService)
     {
         _projectService = projectService;
+        _bedroomPricingService = bedroomPricingService;
+    }
+
+    [HttpPost("preview")]
+    public async Task<IActionResult> Preview(BedroomPlannerRequestDto dto)
+    {
+        try
+        {
+            var preview = await _bedroomPricingService.PreviewAsync(dto);
+            return Ok(preview);
+        }
+        catch (BedroomPricingValidationException ex)
+        {
+            return BadRequest(new { errors = ex.Errors });
+        }
     }
 
     [HttpPost]

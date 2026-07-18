@@ -16,6 +16,8 @@ public class AppDbContext : DbContext
 
     public DbSet<PriceItem> PriceItems { get; set; }
 
+    public DbSet<AuditLog> AuditLogs { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -57,6 +59,40 @@ public class AppDbContext : DbContext
                 .HasConversion<string>()
                 .IsRequired()
                 .HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<AuditLog>(entity =>
+        {
+            entity.Property(a => a.ActorUsername)
+                .IsRequired()
+                .HasMaxLength(150);
+
+            entity.Property(a => a.ActorFullName)
+                .HasMaxLength(100);
+
+            entity.Property(a => a.ActorRole)
+                .IsRequired()
+                .HasMaxLength(20);
+
+            entity.Property(a => a.Action)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(a => a.EntityType)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(a => a.EntityCode)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(a => a.OldValuesJson)
+                .IsRequired()
+                .HasColumnType("longtext");
+
+            entity.Property(a => a.NewValuesJson)
+                .IsRequired()
+                .HasColumnType("longtext");
         });
     }
 }

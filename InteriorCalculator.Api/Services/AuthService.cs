@@ -35,7 +35,7 @@ public class AuthService
             FullName = dto.FullName,
             Username = dto.Username,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-            Role = "Admin"
+            Role = AdminRole.Admin
         };
 
         _context.Admins.Add(admin);
@@ -49,9 +49,16 @@ public class AuthService
                 admin.Id,
                 admin.FullName,
                 admin.Username,
-                admin.Role
+                Role = admin.Role.ToString()
             }
         };
+    }
+
+    public async Task<Admin?> GetActiveAdminById(int id)
+    {
+        return await _context.Admins
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == id && a.IsActive);
     }
 
     public async Task<object> Login(LoginDto dto)
@@ -87,7 +94,7 @@ public class AuthService
                 admin.Id,
                 admin.FullName,
                 admin.Username,
-                admin.Role
+                Role = admin.Role.ToString()
             }
         };
     }
@@ -98,7 +105,7 @@ public class AuthService
         {
             new Claim(ClaimTypes.NameIdentifier, admin.Id.ToString()),
             new Claim(ClaimTypes.Name, admin.Username),
-            new Claim(ClaimTypes.Role, admin.Role)
+            new Claim(ClaimTypes.Role, admin.Role.ToString())
         };
 
         var key = new SymmetricSecurityKey(

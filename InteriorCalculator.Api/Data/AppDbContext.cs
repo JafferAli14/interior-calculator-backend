@@ -20,6 +20,14 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<Admin>(entity =>
+        {
+            entity.Property(a => a.Role)
+                .HasConversion<string>()
+                .IsRequired()
+                .HasMaxLength(20);
+        });
+
         modelBuilder.Entity<PriceItem>(entity =>
         {
             entity.HasIndex(p => p.Code)

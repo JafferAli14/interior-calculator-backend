@@ -9,12 +9,29 @@ using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? [];
+
+if (allowedOrigins.Length == 0)
+{
+    if (builder.Environment.IsDevelopment())
+    {
+        allowedOrigins = ["http://localhost:5173"];
+    }
+    else
+    {
+        throw new InvalidOperationException(
+            "CORS setting 'Cors:AllowedOrigins' must be configured in production.");
+    }
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173")
+            .WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -57,6 +74,12 @@ var jwtIssuer = builder.Configuration["Jwt:Issuer"]
     ?? throw new InvalidOperationException("JWT setting 'Jwt:Issuer' is not configured.");
 var jwtAudience = builder.Configuration["Jwt:Audience"]
     ?? throw new InvalidOperationException("JWT setting 'Jwt:Audience' is not configured.");
+
+if (Encoding.UTF8.GetByteCount(jwtKey) < 32)
+{
+    throw new InvalidOperationException(
+        "JWT setting 'Jwt:Key' must be at least 32 bytes for HS256 signing.");
+}
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

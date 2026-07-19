@@ -14,6 +14,8 @@ public class AppDbContext : DbContext
 
     public DbSet<Project> Projects { get; set; }
 
+    public DbSet<ProjectEstimateLine> ProjectEstimateLines { get; set; }
+
     public DbSet<PriceItem> PriceItems { get; set; }
 
     public DbSet<AuditLog> AuditLogs { get; set; }
@@ -59,6 +61,112 @@ public class AppDbContext : DbContext
                 .HasConversion<string>()
                 .IsRequired()
                 .HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<Project>(entity =>
+        {
+            entity.HasIndex(p => p.ProjectNumber)
+                .IsUnique();
+
+            entity.Property(p => p.ProjectNumber)
+                .IsRequired()
+                .HasMaxLength(30);
+
+            entity.Property(p => p.ProjectName)
+                .IsRequired()
+                .HasMaxLength(150);
+
+            entity.Property(p => p.CustomerName)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(p => p.CustomerPhone)
+                .HasMaxLength(20);
+
+            entity.Property(p => p.CustomerEmail)
+                .HasMaxLength(150);
+
+            entity.Property(p => p.CustomerAddress)
+                .HasMaxLength(200);
+
+            entity.Property(p => p.Status)
+                .IsRequired()
+                .HasMaxLength(30);
+
+            entity.Property(p => p.Currency)
+                .IsRequired()
+                .HasMaxLength(10);
+
+            entity.Property(p => p.GrandTotal)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(p => p.PlannerRequestJson)
+                .IsRequired()
+                .HasColumnType("longtext");
+
+            entity.Property(p => p.CategorySubtotalsJson)
+                .IsRequired()
+                .HasColumnType("longtext");
+
+            entity.Property(p => p.WarningsJson)
+                .IsRequired()
+                .HasColumnType("longtext");
+
+            entity.Property(p => p.CreatedByUsername)
+                .IsRequired()
+                .HasMaxLength(150);
+
+            entity.Property(p => p.CreatedByFullName)
+                .HasMaxLength(100);
+
+            entity.HasMany(p => p.EstimateLines)
+                .WithOne(l => l.Project)
+                .HasForeignKey(l => l.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ProjectEstimateLine>(entity =>
+        {
+            entity.Property(l => l.PriceItemCode)
+                .HasMaxLength(50);
+
+            entity.Property(l => l.ItemName)
+                .IsRequired()
+                .HasMaxLength(150);
+
+            entity.Property(l => l.Category)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(l => l.PricingMode)
+                .IsRequired()
+                .HasMaxLength(20);
+
+            entity.Property(l => l.Selection)
+                .HasMaxLength(200);
+
+            entity.Property(l => l.Area)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(l => l.Length)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(l => l.Unit)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(l => l.Rate)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(l => l.CustomPrice)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(l => l.Calculation)
+                .IsRequired()
+                .HasMaxLength(300);
+
+            entity.Property(l => l.Amount)
+                .HasColumnType("decimal(18,2)");
         });
 
         modelBuilder.Entity<AuditLog>(entity =>

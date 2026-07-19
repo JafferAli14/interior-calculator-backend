@@ -87,9 +87,7 @@ public sealed class BedroomPricingService
         else if (request.ProjectName.Length > 150)
             errors.Add("ProjectName must be 150 characters or fewer.");
 
-        if (string.IsNullOrWhiteSpace(request.ClientName))
-            errors.Add("ClientName is required.");
-        else if (request.ClientName.Length > 100)
+        if (request.ClientName?.Length > 100)
             errors.Add("ClientName must be 100 characters or fewer.");
 
         if (request.ClientMobile?.Length > 20)

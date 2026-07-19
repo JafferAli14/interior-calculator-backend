@@ -1,4 +1,4 @@
-git namespace InteriorCalculator.Api.DTOs;
+namespace InteriorCalculator.Api.DTOs;
 
 public class UpdatePriceItemStatusDto
 {

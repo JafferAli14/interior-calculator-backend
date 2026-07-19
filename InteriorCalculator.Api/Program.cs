@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using InteriorCalculator.Api.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -120,7 +121,44 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
     await PriceItemSeeder.SeedAsync(context);
+
+    var bootstrapFullName =
+        app.Configuration["BootstrapAdmin:FullName"];
+
+    var bootstrapUsername =
+        app.Configuration["BootstrapAdmin:Username"];
+
+    var bootstrapPassword =
+        app.Configuration["BootstrapAdmin:Password"];
+
+    var adminExists = await context.Admins.AnyAsync();
+
+    if (!adminExists &&
+        !string.IsNullOrWhiteSpace(bootstrapFullName) &&
+        !string.IsNullOrWhiteSpace(bootstrapUsername) &&
+        !string.IsNullOrWhiteSpace(bootstrapPassword))
+    {
+        if (bootstrapPassword.Length < 12)
+        {
+            throw new InvalidOperationException(
+                "Bootstrap admin password must contain at least 12 characters.");
+        }
+
+        var firstSuperAdmin = new Admin
+        {
+            FullName = bootstrapFullName.Trim(),
+            Username = bootstrapUsername.Trim(),
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(bootstrapPassword),
+            Role = AdminRole.SuperAdmin,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        context.Admins.Add(firstSuperAdmin);
+        await context.SaveChangesAsync();
+    }
 }
 
 if (app.Environment.IsDevelopment())

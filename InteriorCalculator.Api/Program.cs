@@ -1,10 +1,10 @@
 using System.Security.Claims;
 using System.Text;
 using InteriorCalculator.Api.Data;
+using InteriorCalculator.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using InteriorCalculator.Api.Services;
 using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,6 +40,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -66,14 +67,21 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
         "Connection string 'DefaultConnection' is not configured.");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+    options.UseMySql(
+        connectionString,
+        ServerVersion.AutoDetect(connectionString)));
 
 var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? throw new InvalidOperationException("JWT setting 'Jwt:Key' is not configured.");
+    ?? throw new InvalidOperationException(
+        "JWT setting 'Jwt:Key' is not configured.");
+
 var jwtIssuer = builder.Configuration["Jwt:Issuer"]
-    ?? throw new InvalidOperationException("JWT setting 'Jwt:Issuer' is not configured.");
+    ?? throw new InvalidOperationException(
+        "JWT setting 'Jwt:Issuer' is not configured.");
+
 var jwtAudience = builder.Configuration["Jwt:Audience"]
-    ?? throw new InvalidOperationException("JWT setting 'Jwt:Audience' is not configured.");
+    ?? throw new InvalidOperationException(
+        "JWT setting 'Jwt:Audience' is not configured.");
 
 if (Encoding.UTF8.GetByteCount(jwtKey) < 32)
 {
@@ -81,7 +89,8 @@ if (Encoding.UTF8.GetByteCount(jwtKey) < 32)
         "JWT setting 'Jwt:Key' must be at least 32 bytes for HS256 signing.");
 }
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -92,7 +101,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtKey)),
             NameClaimType = ClaimTypes.Name,
             RoleClaimType = ClaimTypes.Role
         };
@@ -127,5 +137,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapGet("/health", () =>
+{
+    return Results.Ok(new
+    {
+        status = "Healthy"
+    });
+});
 
 app.Run();
